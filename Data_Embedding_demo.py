@@ -4,36 +4,40 @@ import re
 from collections import Counter
 import random # 需要引入 random 库
 
-# --- 修正后的模拟数据生成 (确保词汇量 > 24) ---
-# print("正在生成更丰富的模拟数据...")
+# # --- 修正后的模拟数据生成 (确保词汇量 > 24) ---
+# # print("正在生成更丰富的模拟数据...")
+#
+# # 1. 创建一个包含 100 个不同单词的“词库”
+# vocab_pool = ["apple", "banana", "cherry", "date", "elderberry", "fig", "grape", "honeydew",
+#     "kiwi", "lemon", "mango", "nectarine", "orange", "papaya", "quince", "raspberry",
+#     "strawberry", "tangerine", "ugli", "vanilla", "watermelon", "xylocarp", "yam", "zucchini",
+#     "book", "read", "story", "novel", "author", "page", "cover", "text",
+#     "electronic", "device", "screen", "battery", "charge", "power", "button",
+#     "home", "kitchen", "bed", "bath", "clean", "cook", "wash", "sleep",
+#     "good", "bad", "great", "terrible", "love", "hate", "best", "worst",
+#     "amazing", "awful", "nice", "poor", "excellent", "disappointed",
+#     "happy", "sad", "angry", "joy", "fear", "surprise", "trust",
+#     "fast", "slow", "shipping", "delivery", "box", "package", "arrive"]
+#
+# # 2. 随机生成 4000 条评论，每条评论包含 5-15 个随机词
+# dummy_texts = []
+# for _ in range(4000):
+#     # 随机选取 5 到 15 个词组成一句话
+#     sentence = " ".join(random.choices(vocab_pool, k=random.randint(5, 15)))
+#     dummy_texts.append(sentence)
+#
+# df = pd.DataFrame({
+#     'category': np.random.choice(['Electronics', 'Books', 'Home'], 4000),
+#     'rating': np.random.randint(1, 6, 4000),
+#     'label': np.random.choice(['CG', 'OR'], 4000),
+#     'text': dummy_texts,  # 使用新的随机文本
+#     'word_count': np.random.randint(5, 50, 4000),
+#     'excl_count': np.random.randint(0, 5, 4000)
+# })
 
-# 1. 创建一个包含 100 个不同单词的“词库”
-vocab_pool = ["apple", "banana", "cherry", "date", "elderberry", "fig", "grape", "honeydew",
-    "kiwi", "lemon", "mango", "nectarine", "orange", "papaya", "quince", "raspberry",
-    "strawberry", "tangerine", "ugli", "vanilla", "watermelon", "xylocarp", "yam", "zucchini",
-    "book", "read", "story", "novel", "author", "page", "cover", "text",
-    "electronic", "device", "screen", "battery", "charge", "power", "button",
-    "home", "kitchen", "bed", "bath", "clean", "cook", "wash", "sleep",
-    "good", "bad", "great", "terrible", "love", "hate", "best", "worst",
-    "amazing", "awful", "nice", "poor", "excellent", "disappointed",
-    "happy", "sad", "angry", "joy", "fear", "surprise", "trust",
-    "fast", "slow", "shipping", "delivery", "box", "package", "arrive"]
 
-# 2. 随机生成 4000 条评论，每条评论包含 5-15 个随机词
-dummy_texts = []
-for _ in range(4000):
-    # 随机选取 5 到 15 个词组成一句话
-    sentence = " ".join(random.choices(vocab_pool, k=random.randint(5, 15)))
-    dummy_texts.append(sentence)
 
-df = pd.DataFrame({
-    'category': np.random.choice(['Electronics', 'Books', 'Home'], 4000),
-    'rating': np.random.randint(1, 6, 4000),
-    'label': np.random.choice(['CG', 'OR'], 4000),
-    'text': dummy_texts,  # 使用新的随机文本
-    'word_count': np.random.randint(5, 50, 4000),
-    'excl_count': np.random.randint(0, 5, 4000)
-})
+
 # 1. 读取数据 (模拟读取您的csv，请替换为 pd.read_csv('your_file.csv'))
 # 假设您的 dataframe 叫 df
 try:

@@ -48,4 +48,4 @@ def manual_train_test_split(X, y, test_size=0.2, seed=42):
 
 X_train, X_test, y_train, y_test = manual_train_test_split(X_normalized, y, test_size=0.2)
 
-# print(f"训练集形状: {X_train.shape}, 测试集形状: {X_test.shape}")
+print(f"训练集形状: {X_train.shape}, 测试集形状: {X_test.shape}")

@@ -8,16 +8,23 @@ import os
 
 
 class SimpleMLP:
-    def __init__(self, input_size, hidden_size, output_size, learning_rate=0.01):
+    def __init__(self, input_size, hidden_size, output_size, learning_rate=0.01, momentum=0.9, reg_lambda=0.01):
         self.lr = learning_rate
+        self.momentum = momentum  # 新增动量因子 (通常设为 0.9)
+        self.reg_lambda = reg_lambda  # L2 正则化系数
 
         # 初始化权重和偏置 (He Initialization or Random)
         np.random.seed(42)
         self.W1 = np.random.randn(input_size, hidden_size) * np.sqrt(2. / input_size)
         self.b1 = np.zeros((1, hidden_size))
-
-        self.W2 = np.random.randn(hidden_size, output_size) * np.sqrt(2. / hidden_size)
+        self.W2 = np.random.randn(hidden_size, output_size) * np.sqrt(1. / hidden_size)
         self.b2 = np.zeros((1, output_size))
+
+        # 初始化动量速度 (Velocity)，用于记录梯度的“惯性”
+        self.vW1 = np.zeros_like(self.W1)
+        self.vb1 = np.zeros_like(self.b1)
+        self.vW2 = np.zeros_like(self.W2)
+        self.vb2 = np.zeros_like(self.b2)
 
         # 用于记录最佳参数
         self.best_weights = None
@@ -29,16 +36,24 @@ class SimpleMLP:
     def sigmoid_derivative(self, a):
         return a * (1 - a)
 
+    # 【新增】ReLU 激活函数
+    def relu(self, z):
+        return np.maximum(0, z)
+
+    # 【新增】ReLU 的导数
+    def relu_derivative(self, z):
+        return (z > 0).astype(float)
+
     def forward(self, X):
         # 前向传播
         self.z1 = np.dot(X, self.W1) + self.b1
-        self.a1 = self.sigmoid(self.z1)  # 隐藏层激活
+        self.a1 = self.relu(self.z1)  # 隐藏层激活
 
         self.z2 = np.dot(self.a1, self.W2) + self.b2
         self.a2 = self.sigmoid(self.z2)  # 输出层激活 (预测值)
         return self.a2
 
-    def backward(self, X, y, output):
+    def backward_and_update(self, X, y, output):
         # 反向传播 (Gradient Descent)
         m = X.shape[0]
 
@@ -48,15 +63,34 @@ class SimpleMLP:
         db2 = (1 / m) * np.sum(dz2, axis=0, keepdims=True)
 
         # 计算隐藏层误差
-        dz1 = np.dot(dz2, self.W2.T) * self.sigmoid_derivative(self.a1)
+        # 误差反向传递到第一层
+        da1 = np.dot(dz2, self.W2.T)
+        # 乘以 ReLU 的导数
+        dz1 = da1 * self.relu_derivative(self.z1)
         dW1 = (1 / m) * np.dot(X.T, dz1)
         db1 = (1 / m) * np.sum(dz1, axis=0, keepdims=True)
 
+        # 加入 L2 正则化梯度项
+        # dW += (lambda / m) * W
+        dW2 += (self.reg_lambda / m) * self.W2
+        dW1 += (self.reg_lambda / m) * self.W1
+
         # 更新权重
-        self.W1 -= self.lr * dW1
-        self.b1 -= self.lr * db1
-        self.W2 -= self.lr * dW2
-        self.b2 -= self.lr * db2
+        # v = momentum * v - learning_rate * gradient
+        # W = W + v
+        self.vW2 = self.momentum * self.vW2 - self.lr * dW2
+        self.vb2 = self.momentum * self.vb2 - self.lr * db2
+        self.vW1 = self.momentum * self.vW1 - self.lr * dW1
+        self.vb1 = self.momentum * self.vb1 - self.lr * db1
+
+        self.W2 += self.vW2
+        self.b2 += self.vb2
+        self.W1 += self.vW1
+        self.b1 += self.vb1
+        # self.W1 -= self.lr * dW1
+        # self.b1 -= self.lr * db1
+        # self.W2 -= self.lr * dW2
+        # self.b2 -= self.lr * db2
 
     # 计算精确率的辅助函数
     def calculate_precision(self, X, y):
@@ -84,7 +118,7 @@ class SimpleMLP:
         }
         with open(filename, 'wb') as f:
             pickle.dump(model_params, f)
-        print(f" -> 模型已保存: {filename}")
+        print(f"模型已保存: {filename}")
 
     def load_model(self, filename):
         """加载权重"""
@@ -95,69 +129,79 @@ class SimpleMLP:
         self.W2 = params['W2'];
         self.b2 = params['b2']
 
-    def train(self, X_train, y_train, X_val, y_val, epochs=1000):
+    def train(self, X_train, y_train, X_val, y_val, epochs=1000, batch_size=64):
         # 历史记录容器
         history = {
             'loss': [],
             'train_precision': [],
             'val_precision': []
         }
+        n_samples = X_train.shape[0]
 
         print(f"开始训练 ({epochs} Epochs)...")
 
         for epoch in range(epochs):
-            # 1. Forward & Backward (Train)
-            output = self.forward(X_train)
-            self.backward(X_train, y_train, output)
+            # 【新增】学习率衰减：每 500 轮，学习率乘 0.5
+            if epoch > 0 and epoch % 500 == 0:
+                self.lr *= 0.5
+                print(f" -> Learning rate decayed to {self.lr:.6f}")
 
-            # 2. 记录 Loss
-            loss = -np.mean(y_train * np.log(output + 1e-8) + (1 - y_train) * np.log(1 - output + 1e-8))
-            history['loss'].append(loss)
+            # 1. 每个 Epoch 开始前打乱数据 (Shuffle)
+            indices = np.arange(n_samples)
+            np.random.shuffle(indices)
+            X_shuffled = X_train[indices]
+            y_shuffled = y_train[indices]
 
-            # 3. 计算并记录 Precision (Train & Val)
-            train_prec = self.calculate_precision(X_train, y_train)
-            val_prec = self.calculate_precision(X_val, y_val)
+            epoch_loss = 0
 
-            history['train_precision'].append(train_prec)
-            history['val_precision'].append(val_prec)
+            # 2. Mini-Batch 迭代
+            for i in range(0, n_samples, batch_size):
+                X_batch = X_shuffled[i: i + batch_size]
+                y_batch = y_shuffled[i: i + batch_size]
 
-            # 4. 最佳模型检查 (基于验证集 F1 Score)
-            # 我们用 F1 来判断哪个模型最好，因为它综合了 Precision 和 Recall
-            current_val_f1 = self.calculate_f1(X_val, y_val)
-            if current_val_f1 > self.best_f1:
-                self.best_f1 = current_val_f1
-                # 深度复制当前权重作为最佳权重
-                self.best_weights = {
-                    'W1': self.W1.copy(), 'b1': self.b1.copy(),
-                    'W2': self.W2.copy(), 'b2': self.b2.copy()
-                }
+                # 前向与反向传播 (只针对当前 Batch)
+                output = self.forward(X_batch)
+                self.backward_and_update(X_batch, y_batch, output)
 
-            if epoch % 200 == 0:
-                print(f"    Epoch {epoch}: Loss={loss:.4f}, Val Precision={val_prec:.4f}, Best F1={self.best_f1:.4f}")
+                # 累加 Loss (用于记录)
+                batch_loss = -np.mean(y_batch * np.log(output + 1e-8) + (1 - y_batch) * np.log(1 - output + 1e-8))
+                epoch_loss += batch_loss * X_batch.shape[0]
 
-        # 训练结束后，保存两个模型
+            # 计算平均 Loss
+            avg_loss = epoch_loss / n_samples
+            history['loss'].append(avg_loss)
 
-        # 1. 保存最后一轮模型 (Final Model)
+            # 3. 记录指标 & 保存最佳模型
+            if epoch % 10 == 0:  # 每10轮检查一次，减少计算量
+                train_prec = self.calculate_precision(X_train, y_train)
+                val_prec = self.calculate_precision(X_val, y_val)
+                val_f1 = self.calculate_f1(X_val, y_val)
+
+                history['train_precision'].append(train_prec)
+                history['val_precision'].append(val_prec)
+
+                if val_f1 > self.best_f1:
+                    self.best_f1 = val_f1
+                    self.best_weights = {'W1': self.W1.copy(), 'b1': self.b1.copy(), 'W2': self.W2.copy(),
+                                         'b2': self.b2.copy()}
+
+                if epoch % 100 == 0:
+                    print(f"Epoch {epoch}: Loss={avg_loss:.4f}, Val F1={val_f1:.4f}")
+
+        # 保存
         self.save_model("D:/Projects/DTS402/output/model/model_final.pkl")
-
-        # 2. 保存并加载最佳模型 (Best Model)
         if self.best_weights:
-            # 先暂存当前的 final 权重
-            final_weights = {'W1': self.W1, 'b1': self.b1, 'W2': self.W2, 'b2': self.b2}
+            # 恢复最佳权重保存
+            temp_W1, temp_b1 = self.W1, self.b1
+            temp_W2, temp_b2 = self.W2, self.b2
 
-            # 加载最佳权重并保存文件
-            self.W1 = self.best_weights['W1'];
-            self.b1 = self.best_weights['b1']
-            self.W2 = self.best_weights['W2'];
-            self.b2 = self.best_weights['b2']
+            self.W1, self.b1 = self.best_weights['W1'], self.best_weights['b1']
+            self.W2, self.b2 = self.best_weights['W2'], self.best_weights['b2']
             self.save_model("D:/Projects/DTS402/output/model/model_best.pkl")
 
-            # 恢复回最后一轮的权重(以便画图反映的是完整的训练过程)
-            # 或者您可以选择就让模型停留在最佳状态，这里我们选择恢复，让用户决定
-            self.W1 = final_weights['W1'];
-            self.b1 = final_weights['b1']
-            self.W2 = final_weights['W2'];
-            self.b2 = final_weights['b2']
+            # 恢复回当前权重，或者就保留最佳权重
+            self.W1, self.b1 = temp_W1, temp_b1
+            self.W2, self.b2 = temp_W2, temp_b2
 
         return history
 

@@ -10,11 +10,11 @@ from Split import X_train, y_train, X_test, y_test
 # 4.1 初始化模型
 # input_size: 特征数量 (比如 24个SVD特征 + 评分 + 字数 = 26左右)
 input_dim = X_train.shape[1]
-model = SimpleMLP(input_size=input_dim, hidden_size=16, output_size=1, learning_rate=0.1)
+model = SimpleMLP(input_size=input_dim, hidden_size=16, output_size=1, learning_rate=0.01, momentum=0.9, reg_lambda=0.1)
 
 # 4.2 开始训练
 print("开始训练神经网络...")
-history = model.train(X_train, y_train, X_test, y_test, epochs=5000)
+history = model.train(X_train, y_train, X_test, y_test, epochs=2000, batch_size=64)
 
 # 4.3 预测
 y_pred_train = model.predict(X_train)
