@@ -14,7 +14,7 @@ model = SimpleMLP(input_size=input_dim, hidden_size=16, output_size=1, learning_
 
 # 4.2 开始训练
 print("开始训练神经网络...")
-history = model.train(X_train, y_train, epochs=2000)
+history = model.train(X_train, y_train, X_test, y_test, epochs=5000)
 
 # 4.3 预测
 y_pred_train = model.predict(X_train)
@@ -118,7 +118,7 @@ loss_history = []
 plt.figure(figsize=(10, 5))
 
 # 直接使用 history 变量
-plt.plot(range(len(history)), history, color='#c44e52', linewidth=2)
+plt.plot( history['loss'], color='#c44e52', linewidth=2)
 
 plt.title('MLP Training Loss Curve', fontsize=14)
 plt.xlabel('Epochs')
@@ -129,36 +129,56 @@ plt.savefig(r'D:\Projects\DTS402\output\3_loss_curve.png', dpi=300, bbox_inches=
 print("已保存: 3_loss_curve.png")
 plt.show()
 
+# ==============================================================================
+# 【新增】图表 4: 精确率曲线 (Precision Curve)
+# 展示 训练集 vs 验证集 的精确率变化
+# ==============================================================================
+plt.figure(figsize=(10, 5))
+plt.plot(history['train_precision'], color='#4c72b0', linewidth=2, label='Train Precision')
+plt.plot(history['val_precision'], color='#55a868', linewidth=2, linestyle='--', label='Validation Precision')
+
+plt.title('Precision Curve: Train vs Validation', fontsize=14)
+plt.xlabel('Epochs')
+plt.ylabel('Precision Score')
+plt.legend()
+plt.ylim(0, 1.05) # 限制Y轴在 0-1 之间
+plt.grid(True, linestyle='--', alpha=0.5)
+
+# 保存图片
+plt.savefig(r'D:\Projects\DTS402\output\4_precision_curve.png', dpi=300, bbox_inches='tight')
+print("已保存: 4_precision_curve.png")
+plt.show()
+
 
 # ==============================================================================
 # 图表 4: 混淆矩阵 (Confusion Matrix)
-# 对应作业要求: "Evaluation Metrics... predictive accuracy" [cite: 95]
-# 这是一个纯 Matplotlib 手写的混淆矩阵热力图
+# 注意：这里我们加载 "最佳模型" 来绘制混淆矩阵，以展示最好的结果
 # ==============================================================================
-# 1. 计算混淆矩阵数值
+# 加载最佳模型权重
+print("正在加载最佳模型 (model_best.pkl) 进行最终评估...")
+model.load_model("D:/Projects/DTS402/output/model/model_best.pkl")
+
 y_pred_final = model.predict(X_test).flatten()
 y_true_final = y_test.flatten()
 
+# 计算矩阵
 tp = np.sum((y_true_final == 1) & (y_pred_final == 1))
 tn = np.sum((y_true_final == 0) & (y_pred_final == 0))
 fp = np.sum((y_true_final == 0) & (y_pred_final == 1))
 fn = np.sum((y_true_final == 1) & (y_pred_final == 0))
+cm = np.array([[tn, fp], [fn, tp]])
 
-cm = np.array([[tn, fp], [fn, tp]]) # 标准格式: [[TN, FP], [FN, TP]]
-
-# 2. 绘图
+# 绘图
 plt.figure(figsize=(6, 5))
 plt.imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
-plt.title('Confusion Matrix (Test Set)', fontsize=14)
+plt.title('Confusion Matrix (Best Model)', fontsize=14)
 plt.colorbar()
 
-# 设置标签
 classes = ['Fake (CG)', 'Original (OR)']
 tick_marks = np.arange(len(classes))
 plt.xticks(tick_marks, classes, rotation=0)
 plt.yticks(tick_marks, classes)
 
-# 在格子里填数字
 thresh = cm.max() / 2.
 for i in range(cm.shape[0]):
     for j in range(cm.shape[1]):
@@ -169,6 +189,5 @@ for i in range(cm.shape[0]):
 plt.ylabel('True Label')
 plt.xlabel('Predicted Label')
 plt.tight_layout()
-plt.savefig(r'D:\Projects\DTS402\output\4_confusion_matrix.png', dpi=300, bbox_inches='tight')
-print("已保存: 4_confusion_matrix.png")
+plt.savefig(r'D:\Projects\DTS402\output\5_confusion_matrix_best.png', dpi=300, bbox_inches='tight')
 plt.show()
