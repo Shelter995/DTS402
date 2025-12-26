@@ -1,7 +1,7 @@
 import pandas as pd
 
 # 1. Read the original large dataset.
-df = pd.read_csv('D:/Projects/DTS402/dataset/FRDDS.csv')
+df = pd.read_csv('/dataset/FRDDS.csv')
 
 print(f"Size of the original dataset: {df.shape}")
 

@@ -1,7 +1,7 @@
 import pandas as pd
 
 # 1. 读取数据
-df = pd.read_csv('D:/Projects/DTS402/dataset/small_dataset_3k.csv')
+df = pd.read_csv('/dataset/small_dataset_3k.csv')
 
 # --- 预处理：确保 text 列是字符串，处理空值 ---
 df['text'] = df['text'].fillna('').astype(str)

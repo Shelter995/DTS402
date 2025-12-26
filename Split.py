@@ -1,51 +1,44 @@
-import numpy as np
+# 第五步 (修正版): 先切分数据集，防止数据泄露
+# The fifth step (Corrected): Split dataset FIRST to prevent data leakage.
 import pandas as pd
+import numpy as np
+import os
 
-from Data_Embedding_demo import final_df
+# 1. 读取包含基础特征的文件 (这是第四步生成的)
+input_path = r'C:\Users\Zijie.Xue25\XZJ_PythonProjects\DTS402\dataset\merged_dataset_with_features.csv'
+df = pd.read_csv(input_path)
 
-# 假设 final_df 是我们上一通过 SVD 得到的 DataFrame
-# final_df 包含: category, rating, label, word_count, excl_count, tfidf_svd_0...tfidf_svd_23
+# 简单的空值处理
+df['text'] = df['text'].fillna('').astype(str)
 
-# ==========================================
-# 1. 数据准备 (Data Preparation)
-# ==========================================
+print(f"原始数据集大小: {df.shape}")
 
-# 1.1 提取特征 (X) 和 标签 (y)
-# 除去非数值列 (category, text) 和 标签列 (label)
-feature_cols = [c for c in final_df.columns if c not in ['category', 'text', 'label']]
-X = final_df[feature_cols].values.astype(float)
+# 2. 随机打乱并切分 (80% 训练, 20% 测试)
+# 设置随机种子确保可复现
+np.random.seed(42)
 
-# 1.2 标签编码 (Label Encoding)
-# 假设 'OR' (Original?) 是 1, 'CG' (Computer Generated?) 是 0
-# 您需要根据实际业务含义调整
-y = np.where(final_df['label'] == 'OR', 1, 0)
-y = y.reshape(-1, 1)  # 变成 (N, 1) 的形状
+# 生成随机索引
+indices = np.random.permutation(len(df))
+test_size = int(len(df) * 0.2)
 
-# 1.3 数据归一化 (Normalization) - 神经网络对尺度非常敏感！
-# 手写 StandardScaler: (X - mean) / std
-X_mean = np.mean(X, axis=0)
-X_std = np.std(X, axis=0) + 1e-8  # 加一个小数值防止除以0
-X_normalized = (X - X_mean) / X_std
+test_indices = indices[:test_size]
+train_indices = indices[test_size:]
 
+# 切分 DataFrame
+df_train = df.iloc[train_indices].reset_index(drop=True)
+df_test = df.iloc[test_indices].reset_index(drop=True)
 
-# ==========================================
-# 2. 划分数据集 (Train/Test Split)
-# ==========================================
-# 严禁使用 sklearn.model_selection.train_test_split
+print(f"训练集大小 (Train): {df_train.shape}")
+print(f"测试集大小 (Test): {df_test.shape}")
 
-def manual_train_test_split(X, y, test_size=0.2, seed=42):
-    np.random.seed(seed)
-    n_samples = X.shape[0]
-    indices = np.random.permutation(n_samples)  # 随机打乱索引
+# 3. 保存切分后的原始数据 (Raw Split Data)
+# 这一步很重要，后续所有的特征工程都基于这两个分开的文件，互不干扰
+train_save_path = r'C:\Users\Zijie.Xue25\XZJ_PythonProjects\DTS402\dataset\train_raw.csv'
+test_save_path = r'C:\Users\Zijie.Xue25\XZJ_PythonProjects\DTS402\dataset\test_raw.csv'
 
-    test_samples = int(n_samples * test_size)
+df_train.to_csv(train_save_path, index=False)
+df_test.to_csv(test_save_path, index=False)
 
-    test_indices = indices[:test_samples]
-    train_indices = indices[test_samples:]
-
-    return X[train_indices], X[test_indices], y[train_indices], y[test_indices]
-
-
-X_train, X_test, y_train, y_test = manual_train_test_split(X_normalized, y, test_size=0.2)
-
-print(f"训练集形状: {X_train.shape}, 测试集形状: {X_test.shape}")
+print(f"\n✅ 数据集已切分并保存!")
+print(f"训练集: {train_save_path}")
+print(f"测试集: {test_save_path}")
