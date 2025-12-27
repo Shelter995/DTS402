@@ -3,7 +3,7 @@ import pandas as pd
 # 1. 定义文件路径
 file1_path = 'D:/Projects/DTS402/dataset/open_3k.csv'
 file2_path = 'D:/Projects/DTS402/dataset/self_dataset_cleaned.csv' # 注意确认文件名是否完全一致
-output_path = '/dataset/merged_dataset.csv'
+output_path = 'D:/Projects/DTS402/dataset/merged_dataset.csv'
 
 # 2. 读取两个 CSV 文件
 # 使用 utf-8-sig 确保之前的特殊字符（如弯引号）能被正确读取

@@ -12,7 +12,7 @@ from Model import SimpleMLP
 from TrainingData_Prepare import X_train, y_train, X_test, y_test, feature_cols
 
 # 确保输出目录存在
-output_dir = r'C:\Users\Zijie.Xue25\XZJ_PythonProjects\DTS402\output'
+output_dir = r'D:\Projects\DTS402\output'
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
@@ -161,7 +161,7 @@ plt.show()
 # Chart 5: Confusion Matrix (Best Model)
 # ==============================================================================
 print("The best model (model_best.pkl) is being loaded for the final evaluation...")
-best_model_path = r"C:\Users\Zijie.Xue25\XZJ_PythonProjects\DTS402\output\model\model_best.pkl"
+best_model_path = r"D:\Projects\DTS402\output\model\model_best.pkl"
 try:
     model.load_model(best_model_path)
 

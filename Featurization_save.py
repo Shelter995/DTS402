@@ -1,7 +1,7 @@
 import pandas as pd
 
 # 1. 读取数据
-input_path = r'C:\Users\Zijie.Xue25\XZJ_PythonProjects\DTS402\dataset\open_3k.csv'
+input_path = r'D:\Projects\DTS402\dataset\merged_dataset.csv'
 df = pd.read_csv(input_path)
 
 # --- 预处理：确保 text 列是字符串，处理空值 ---
@@ -26,7 +26,7 @@ print(df.groupby('label')[['word_count', 'excl_count']].mean())
 
 # --- 【关键修改】将结果保存到 CSV 文件 ---
 # 建议保存为新文件名，以区分原始数据
-output_path = r'C:\Users\Zijie.Xue25\XZJ_PythonProjects\DTS402\dataset\open_3k_with_features.csv'
+output_path = r'D:\Projects\DTS402\dataset\merged_dataset_with_features.csv'
 
 # index=False 代表不保存行索引(0,1,2...)，只保存数据列
 df.to_csv(output_path, index=False)

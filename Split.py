@@ -5,7 +5,7 @@ import numpy as np
 import os
 
 # 1. 读取包含基础特征的文件 (这是第四步生成的)
-input_path = r'C:\Users\Zijie.Xue25\XZJ_PythonProjects\DTS402\dataset\merged_dataset_with_features.csv'
+input_path = r'D:\Projects\DTS402\dataset\merged_dataset_with_features.csv'
 df = pd.read_csv(input_path)
 
 # 简单的空值处理
@@ -33,8 +33,8 @@ print(f"测试集大小 (Test): {df_test.shape}")
 
 # 3. 保存切分后的原始数据 (Raw Split Data)
 # 这一步很重要，后续所有的特征工程都基于这两个分开的文件，互不干扰
-train_save_path = r'C:\Users\Zijie.Xue25\XZJ_PythonProjects\DTS402\dataset\train_raw.csv'
-test_save_path = r'C:\Users\Zijie.Xue25\XZJ_PythonProjects\DTS402\dataset\test_raw.csv'
+train_save_path = r'D:\Projects\DTS402\dataset\train_raw.csv'
+test_save_path = r'D:\Projects\DTS402\dataset\test_raw.csv'
 
 df_train.to_csv(train_save_path, index=False)
 df_test.to_csv(test_save_path, index=False)

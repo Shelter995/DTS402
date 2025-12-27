@@ -21,7 +21,7 @@ input_dim = X_train.shape[1]
 model_best = SimpleMLP(input_size=input_dim, learning_rate=0.001, momentum=0.9, reg_lambda=0.001)
 
 # 加载训练好的最佳权重
-best_model_path = r"C:\Users\Zijie.Xue25\XZJ_PythonProjects\DTS402\output\model\model_best.pkl"
+best_model_path = r"D:\Projects\DTS402\output\model\model_best.pkl"
 if os.path.exists(best_model_path):
     model_best.load_model(best_model_path)
     print(f"✅ 已加载最佳模型: {best_model_path}")
@@ -114,7 +114,7 @@ def evaluate_and_record(name, X, y):
 
 
 # --- 数据集 A: Open Dataset (原始文件) ---
-path_open = r'C:\Users\Zijie.Xue25\XZJ_PythonProjects\DTS402\dataset\open_3k.csv'
+path_open = r'D:\Projects\DTS402\dataset\open_3k.csv'
 if os.path.exists(path_open):
     df_open = pd.read_csv(path_open)
     X_open, y_open = transform_pipeline(df_open, "Open Dataset (3k)")
@@ -123,7 +123,7 @@ else:
     print(f"❌ 找不到文件: {path_open}")
 
 # --- 数据集 B: Self Dataset (原始文件) ---
-path_self = r'C:\Users\Zijie.Xue25\XZJ_PythonProjects\DTS402\dataset\self_dataset_cleaned.csv'
+path_self = r'D:\Projects\DTS402\dataset\self_dataset_cleaned.csv'
 if os.path.exists(path_self):
     df_self = pd.read_csv(path_self)
     X_self, y_self = transform_pipeline(df_self, "Self Dataset")
@@ -174,7 +174,7 @@ if len(results) > 0:
     axes[1].set_title('Dataset Sample Sizes', fontsize=14)
 
     plt.tight_layout()
-    save_path = r'C:\Users\Zijie.Xue25\XZJ_PythonProjects\DTS402\output\6_final_comparison.png'
+    save_path = r'D:\Projects\DTS402\output\6_final_comparison.png'
     plt.savefig(save_path, dpi=300)
     print(f"图表已保存: {save_path}")
     plt.show()

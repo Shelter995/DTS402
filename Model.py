@@ -9,7 +9,7 @@ import pickle
 import os
 
 # 确保输出目录存在
-output_dir = r'C:\Users\Zijie.Xue25\XZJ_PythonProjects\DTS402\output\model'
+output_dir = r'D:\Projects\DTS402\output\model'
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
@@ -259,10 +259,10 @@ class SimpleMLP:
                     break
 
         # 保存最终模型
-        self.save_model(r"C:\Users\Zijie.Xue25\XZJ_PythonProjects\DTS402\output\model\model_final.pkl")
+        self.save_model(r"D:\Projects\DTS402\output\model\model_final.pkl")
         if self.best_weights:
             self._load_best_weights()
-            self.save_model(r"C:\Users\Zijie.Xue25\XZJ_PythonProjects\DTS402\output\model\model_best.pkl")
+            self.save_model(r"D:\Projects\DTS402\output\model\model_best.pkl")
 
         return history
 

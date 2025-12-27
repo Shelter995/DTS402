@@ -7,8 +7,8 @@ from collections import Counter
 import pickle  # 用于保存 IDF 和 SVD 参数
 
 # 1. 读取切分好的数据
-df_train = pd.read_csv(r'C:\Users\Zijie.Xue25\XZJ_PythonProjects\DTS402\dataset\train_raw.csv')
-df_test = pd.read_csv(r'C:\Users\Zijie.Xue25\XZJ_PythonProjects\DTS402\dataset\test_raw.csv')
+df_train = pd.read_csv(r'D:\Projects\DTS402\dataset\train_raw.csv')
+df_test = pd.read_csv(r'D:\Projects\DTS402\dataset\test_raw.csv')
 
 # 再次确保文本列为字符串
 df_train['text'] = df_train['text'].fillna('').astype(str)
@@ -129,8 +129,8 @@ df_test_svd = pd.DataFrame(X_test_svd, columns=col_names)
 final_test = pd.concat([df_test, df_test_svd], axis=1)
 
 # 保存文件
-train_out_path = r'C:\Users\Zijie.Xue25\XZJ_PythonProjects\DTS402\dataset\train_processed_final.csv'
-test_out_path = r'C:\Users\Zijie.Xue25\XZJ_PythonProjects\DTS402\dataset\test_processed_final.csv'
+train_out_path = r'D:\Projects\DTS402\dataset\train_processed_final.csv'
+test_out_path = r'D:\Projects\DTS402\dataset\test_processed_final.csv'
 
 final_train.to_csv(train_out_path, index=False)
 final_test.to_csv(test_out_path, index=False)

@@ -3,8 +3,8 @@ import pandas as pd
 import numpy as np
 
 # 1. 读取我们在 Cell 6 中生成的最终文件
-train_path = r'C:\Users\Zijie.Xue25\XZJ_PythonProjects\DTS402\dataset\train_processed_final.csv'
-test_path = r'C:\Users\Zijie.Xue25\XZJ_PythonProjects\DTS402\dataset\test_processed_final.csv'
+train_path = r'D:\Projects\DTS402\dataset\train_processed_final.csv'
+test_path = r'D:\Projects\DTS402\dataset\test_processed_final.csv'
 
 df_train_final = pd.read_csv(train_path)
 df_test_final = pd.read_csv(test_path)
