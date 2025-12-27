@@ -7,6 +7,7 @@
 import numpy as np
 import pickle
 import os
+import time
 
 # 确保输出目录存在
 output_dir = r'D:\Projects\DTS402\output\model'
@@ -193,6 +194,9 @@ class SimpleMLP:
         print(f"开始训练 (Epochs={epochs}, LR={self.lr})...")
         print(f"网络结构: {X_train.shape[1]} -> 64 -> 32 -> 1")
 
+        # <--- 开始计时
+        start_time = time.time()
+
         for epoch in range(epochs):
             # 学习率衰减
             if epoch > 0 and epoch % 200 == 0:
@@ -257,7 +261,10 @@ class SimpleMLP:
                     print(f"\nEarly stopping at epoch {epoch}")
                     print(f"Best validation F1: {self.best_f1:.4f}")
                     break
-
+        # <--- 结束计时并打印
+        end_time = time.time()
+        total_time = end_time - start_time
+        print(f"\n✅ 训练结束。总耗时: {total_time:.2f} 秒")
         # 保存最终模型
         self.save_model(r"D:\Projects\DTS402\output\model\model_final.pkl")
         if self.best_weights:
